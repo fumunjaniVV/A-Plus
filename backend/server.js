@@ -33,7 +33,10 @@ const app = express(); // Creates the Express application.
 const PORT = 3000; // Sets the port the backend will run on.
 
 app.use(cors({
-    origin: 'http://localhost:5173'
+    origin: [
+        'http://localhost:5173',
+        'https://aplus-preprod.netlify.app'
+    ]
 }));
 
 app.use(express.json()); // Allows the backend to receive JSON data.
