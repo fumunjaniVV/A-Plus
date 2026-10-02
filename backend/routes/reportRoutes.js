@@ -9,31 +9,28 @@ const router = express.Router();
 router.use(authenticateToken);
 
 
-// ============================================================
-// GET ALL REPORTS
-// Staff see everyone's reports. A Student sees only their own.
-// ============================================================
-
 router.get('/', async (req, res) => {
     try {
+
+        const baseQuery =
+            `SELECT r.*, s.first_name, s.last_name, s.admission_number,
+                    t.term_name, ay.year_name
+             FROM reports r
+             JOIN students s ON s.student_id = r.student_id
+             JOIN terms t ON t.term_id = r.term_id
+             JOIN academic_years ay ON ay.academic_year_id = r.academic_year_id`;
 
         if (req.user.role === 'Student') {
 
             const result = await pool.query(
-                `SELECT r.*
-                 FROM reports r
-                 JOIN students s ON s.student_id = r.student_id
-                 WHERE s.user_id = $1
-                 ORDER BY r.report_id`,
+                `${baseQuery} WHERE s.user_id = $1 ORDER BY r.report_id`,
                 [req.user.user_id]
             );
 
             return res.status(200).json(result.rows);
         }
 
-        const result = await pool.query(
-            'SELECT * FROM reports ORDER BY report_id'
-        );
+        const result = await pool.query(`${baseQuery} ORDER BY r.report_id`);
 
         res.status(200).json(result.rows);
 
@@ -47,10 +44,65 @@ router.get('/', async (req, res) => {
 });
 
 
-// ============================================================
-// GET ONE REPORT
-// A Student can only view a report that is actually theirs.
-// ============================================================
+router.get('/:id/full', async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        const reportResult = await pool.query(
+            `SELECT r.report_id, r.overall_average, r.overall_grade,
+                    r.teacher_comment, r.principal_comment, r.report_status,
+                    s.first_name, s.last_name, s.admission_number,
+                    s.user_id AS student_user_id,
+                    t.term_name, ay.year_name
+             FROM reports r
+             JOIN students s ON s.student_id = r.student_id
+             JOIN terms t ON t.term_id = r.term_id
+             JOIN academic_years ay ON ay.academic_year_id = r.academic_year_id
+             WHERE r.report_id = $1`,
+            [id]
+        );
+
+        if (reportResult.rows.length === 0) {
+            return res.status(404).json({
+                error: 'Report not found'
+            });
+        }
+
+        const report = reportResult.rows[0];
+
+        if (req.user.role === 'Student' && report.student_user_id !== req.user.user_id) {
+            return res.status(403).json({
+                error: 'You do not have permission to view this report'
+            });
+        }
+
+        delete report.student_user_id;
+
+        const marksResult = await pool.query(
+            `SELECT sub.subject_name, m.mark, m.grade, u.full_name AS teacher_name
+             FROM marks m
+             JOIN subjects sub ON sub.subject_id = m.subject_id
+             LEFT JOIN teachers te ON te.teacher_id = m.teacher_id
+             LEFT JOIN users u ON u.user_id = te.user_id
+             WHERE m.report_id = $1
+             ORDER BY sub.subject_name`,
+            [id]
+        );
+
+        res.status(200).json({
+            ...report,
+            marks: marksResult.rows
+        });
+
+    } catch (error) {
+        console.error('Error retrieving full report:', error.message);
+
+        res.status(500).json({
+            error: 'Failed to retrieve full report'
+        });
+    }
+});
+
 
 router.get('/:id', async (req, res) => {
     try {
@@ -97,11 +149,6 @@ router.get('/:id', async (req, res) => {
     }
 });
 
-
-// ============================================================
-// CREATE REPORT
-// Teacher or Administrator.
-// ============================================================
 
 router.post('/', verifyRole('Teacher', 'Administrator'), async (req, res) => {
     try {
@@ -154,10 +201,42 @@ router.post('/', verifyRole('Teacher', 'Administrator'), async (req, res) => {
 });
 
 
-// ============================================================
-// UPDATE REPORT
-// Teacher, Principal, or Administrator.
-// ============================================================
+router.put('/:id/principal-comment', verifyRole('Principal', 'Administrator'), async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { principal_comment } = req.body;
+
+        if (typeof principal_comment !== 'string') {
+            return res.status(400).json({
+                error: 'principal_comment must be text'
+            });
+        }
+
+        const result = await pool.query(
+            `UPDATE reports
+             SET principal_comment = $1
+             WHERE report_id = $2
+             RETURNING report_id, principal_comment`,
+            [principal_comment.trim(), id]
+        );
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({
+                error: 'Report not found'
+            });
+        }
+
+        res.status(200).json(result.rows[0]);
+
+    } catch (error) {
+        console.error('Error saving principal comment:', error.message);
+
+        res.status(500).json({
+            error: 'Failed to save principal comment'
+        });
+    }
+});
+
 
 router.put('/:id', verifyRole('Teacher', 'Principal', 'Administrator'), async (req, res) => {
     try {
@@ -217,11 +296,6 @@ router.put('/:id', verifyRole('Teacher', 'Principal', 'Administrator'), async (r
     }
 });
 
-
-// ============================================================
-// DELETE REPORT
-// Administrator only.
-// ============================================================
 
 router.delete('/:id', verifyRole('Administrator'), async (req, res) => {
     try {

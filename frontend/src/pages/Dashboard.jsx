@@ -40,27 +40,32 @@ function Dashboard() {
             {
                 title: "Teachers",
                 description: "Manage teachers and departments.",
-                icon: <GraduationCap size={30} />
+                icon: <GraduationCap size={30} />,
+                path: "/teachers"
             },
             {
                 title: "Classes",
                 description: "Manage classes and assignments.",
-                icon: <School size={30} />
+                icon: <School size={30} />,
+                path: "/classes"
             },
             {
                 title: "Reports",
                 description: "View and manage academic reports.",
-                icon: <FileText size={30} />
+                icon: <FileText size={30} />,
+                path: "/reports"
             },
             {
                 title: "Subjects",
                 description: "Manage school subjects.",
-                icon: <BookOpen size={30} />
+                icon: <BookOpen size={30} />,
+                path: "/subjects"
             },
             {
-                title: "System Settings",
-                description: "Configure the A+ system.",
-                icon: <Settings size={30} />
+                title: "Users",
+                description: "Manage system user accounts.",
+                icon: <Settings size={30} />,
+                path: "/users"
             }
         ],
 
@@ -74,12 +79,14 @@ function Dashboard() {
             {
                 title: "Teachers",
                 description: "View teacher information.",
-                icon: <GraduationCap size={30} />
+                icon: <GraduationCap size={30} />,
+                path: "/teachers"
             },
             {
                 title: "Reports",
                 description: "Review academic reports.",
-                icon: <FileText size={30} />
+                icon: <FileText size={30} />,
+                path: "/reports"
             },
             {
                 title: "Academic Overview",
@@ -98,17 +105,26 @@ function Dashboard() {
             {
                 title: "My Classes",
                 description: "View teaching classes.",
-                icon: <School size={30} />
+                icon: <School size={30} />,
+                path: "/classes"
+            },
+            {
+                title: "Capture Marks",
+                description: "Record marks and generate a report for a student.",
+                icon: <ClipboardList size={30} />,
+                path: "/marks/capture"
             },
             {
                 title: "Marks",
-                description: "Capture and update marks.",
-                icon: <ClipboardList size={30} />
+                description: "View recorded marks.",
+                icon: <ClipboardList size={30} />,
+                path: "/marks"
             },
             {
                 title: "Reports",
-                description: "Prepare student reports.",
-                icon: <FileText size={30} />
+                description: "View student reports.",
+                icon: <FileText size={30} />,
+                path: "/reports"
             }
         ],
 
@@ -116,22 +132,26 @@ function Dashboard() {
             {
                 title: "My Profile",
                 description: "View your personal information.",
-                icon: <UserRound size={30} />
+                icon: <UserRound size={30} />,
+                path: "/my/profile"
             },
             {
-                title: "My Subjects",
-                description: "View enrolled subjects.",
-                icon: <BookOpen size={30} />
+                title: "Subjects",
+                description: "Browse the subjects offered at school.",
+                icon: <BookOpen size={30} />,
+                path: "/subjects"
             },
             {
                 title: "My Marks",
                 description: "View your academic marks.",
-                icon: <ClipboardList size={30} />
+                icon: <ClipboardList size={30} />,
+                path: "/my/marks"
             },
             {
                 title: "My Reports",
-                description: "View your school reports.",
-                icon: <FileText size={30} />
+                description: "View and download your school reports.",
+                icon: <FileText size={30} />,
+                path: "/reports"
             }
         ]
     };
