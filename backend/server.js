@@ -30,7 +30,7 @@ const userRoutes = require('./routes/userRoutes');
 
 const app = express(); // Creates the Express application.
 
-const PORT = 3000; // Sets the port the backend will run on.
+const PORT = process.env.PORT || 3000;
 
 app.use(cors({
     origin: [
@@ -73,8 +73,10 @@ app.get('/', (req, res) => { // Creates a test route for the main URL.
 
 }); // Closes the main route.
 
-app.listen(PORT, () => { // Starts the backend server.
+if (require.main === module) {
+    app.listen(PORT, () => {
+        console.log(`A+ backend server is running on port ${PORT}`);
+    });
+}
 
-    console.log(`A+ backend server is running on port ${PORT}`); // Confirms the server is running.
-
-}); // Closes the server startup function.
+module.exports = app;
