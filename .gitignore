@@ -32,3 +32,11 @@ dist-ssr/
 *.njsproj
 *.sln
 *.sw?
+
+# Environment variables
+.env
+.env.*
+
+# Database backups
+*.dump
+*.sql
